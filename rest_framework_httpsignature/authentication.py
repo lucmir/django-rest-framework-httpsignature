@@ -86,7 +86,11 @@ class SignatureAuthentication(authentication.BaseAuthentication):
         sent_string = request.META.get(authorization_header)
         if not sent_string:
             raise exceptions.AuthenticationFailed('No signature provided')
+
+        # Check if signature string matches signature pattern
         sent_signature = self.get_signature_from_signature_string(sent_string)
+        if not sent_signature:
+            return None
 
         # Fetch credentials for API key from the data store.
         try:
