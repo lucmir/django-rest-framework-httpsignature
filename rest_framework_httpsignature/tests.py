@@ -177,11 +177,24 @@ class SignatureAuthenticationTestCase(TestCase):
         self.assertRaises(AuthenticationFailed,
                           self.auth.authenticate, request)
 
-    def test_bad_signature(self):
+    def test_no_signature(self):
         request = RequestFactory().get(
             ENDPOINT, {},
             HTTP_X_API_KEY=KEYID,
-            HTTP_AUTHORIZATION='some-wrong-value')
+            HTTP_AUTHORIZATION='no-signature')
+        res = self.auth.authenticate(request)
+        self.assertIsNone(res)
+
+    def test_bad_signature(self):
+        headers = ['(request-target)', 'accept', 'date', 'host']
+        signature = build_signature(
+            headers,
+            key_id=KEYID,
+            signature='some-wrong-value')
+        request = RequestFactory().get(
+            ENDPOINT, {},
+            HTTP_X_API_KEY=KEYID,
+            HTTP_AUTHORIZATION=signature)
         self.assertRaises(AuthenticationFailed,
                           self.auth.authenticate, request)
 
